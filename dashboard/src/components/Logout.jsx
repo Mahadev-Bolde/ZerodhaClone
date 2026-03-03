@@ -26,7 +26,7 @@ export default function Logout() {
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
-          window.location.href = `https://zerodha-clone-vbg9.vercel.app`;
+          window.location.href = `https://zerodha-clone-vbg9.vercel.app/`;
         }, 1000);
       } else {
         handleError(message);

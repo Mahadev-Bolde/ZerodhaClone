@@ -41,7 +41,7 @@ export default function Login() {
         handleSuccess(message);
         setTimeout(() => {
           let userInitial = form.email[0] + form.email[1];
-          window.location.href = `https://zerodha-clone-git-main-mahadev-boldes-projects.vercel.app?user=${userInitial}`;
+          window.location.href = `https://zerodha-clone-ruddy-zeta.vercel.app/?user=${userInitial}`;
         }, 1000);
       } else {
         handleError(message);
