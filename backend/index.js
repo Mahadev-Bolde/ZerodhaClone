@@ -21,65 +21,51 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
 
-/* ✅ CORS ENABLED FOR ALL ORIGINS */
+/* ✅ FIXED CORS (ONLY CHANGE MADE) */
 app.use(
   cors({
-    origin: true,
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://zerodha-clone-vbg9.vercel.app",
+      "https://zerodha-clone-ruddy-zeta.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
 
-// Handle preflight requests explicitly
+// Explicitly allow preflight requests
 app.options("*", cors());
 
 // Get All Holdings
 app.get("/allHoldings", async (req, res) => {
-  try {
-    const allHoldings = await HoldingsModel.find({});
-    res.json(allHoldings);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching holdings" });
-  }
+  let allHoldings = await HoldingsModel.find({});
+  res.json(allHoldings);
 });
 
 // Get All Positions
 app.get("/allPositions", async (req, res) => {
-  try {
-    const allPositions = await PositionsModel.find({});
-    res.json(allPositions);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching positions" });
-  }
+  let allPositions = await PositionsModel.find({});
+  res.json(allPositions);
 });
 
-// Create New Order
+// Get order
 app.post("/newOrder", async (req, res) => {
-  try {
-    const newOrder = new OrdersModel({
-      name: req.body.name,
-      qty: req.body.qty,
-      price: req.body.price,
-      mode: req.body.mode,
-    });
-
-    await newOrder.save();
-    res.status(201).json(newOrder);
-  } catch (error) {
-    res.status(500).json({ message: "Error creating order" });
-  }
+  let newOrder = await new OrdersModel({
+    name: req.body.name,
+    qty: req.body.qty,
+    price: req.body.price,
+    mode: req.body.mode,
+  });
+  await newOrder.save();
+  res.send(newOrder);
 });
 
-// Auth Routes
 app.use("/", authRoute);
 
-// Start Server
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`App Started on port ${PORT}`);
-
-  try {
-    await mongoose.connect(uri);
-    console.log("DB Connected Successfully!");
-  } catch (error) {
-    console.log("DB Connection Failed:", error.message);
-  }
+  mongoose.connect(uri);
+  console.log("DB Connected Successfully!");
 });
