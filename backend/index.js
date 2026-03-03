@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -9,72 +10,76 @@ const { HoldingsModel } = require("./Model/HoldingsModel");
 const { PositionsModel } = require("./Model/PositionsModel");
 const { OrdersModel } = require("./Model/OrdersModel");
 
+// Routes
 const authRoute = require("./Routes/AuthRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
-/* ===============================
-   GLOBAL MIDDLEWARE (ORDER MATTERS)
-================================ */
-
-// 🔴 MUST be first
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-
-  // ✅ Handle preflight
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
-
-app.use(cors({ credentials: true }));
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
 
-/* ===============================
-   ROUTES
-================================ */
+/* ✅ CORS ENABLED FOR ALL ORIGINS */
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
-app.get("/", (req, res) => {
-  res.send("Backend running 🚀");
-});
+// Handle preflight requests explicitly
+app.options("*", cors());
 
+// Get All Holdings
 app.get("/allHoldings", async (req, res) => {
-  const allHoldings = await HoldingsModel.find({});
-  res.json(allHoldings);
+  try {
+    const allHoldings = await HoldingsModel.find({});
+    res.json(allHoldings);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching holdings" });
+  }
 });
 
+// Get All Positions
 app.get("/allPositions", async (req, res) => {
-  const allPositions = await PositionsModel.find({});
-  res.json(allPositions);
+  try {
+    const allPositions = await PositionsModel.find({});
+    res.json(allPositions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching positions" });
+  }
 });
 
+// Create New Order
 app.post("/newOrder", async (req, res) => {
-  const newOrder = new OrdersModel(req.body);
-  await newOrder.save();
-  res.json(newOrder);
+  try {
+    const newOrder = new OrdersModel({
+      name: req.body.name,
+      qty: req.body.qty,
+      price: req.body.price,
+      mode: req.body.mode,
+    });
+
+    await newOrder.save();
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating order" });
+  }
 });
 
+// Auth Routes
 app.use("/", authRoute);
 
-/* ===============================
-   DB + SERVER
-================================ */
+// Start Server
+app.listen(PORT, async () => {
+  console.log(`App Started on port ${PORT}`);
 
-mongoose
-  .connect(uri)
-  .then(() => {
-    console.log("DB Connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(console.error);
+  try {
+    await mongoose.connect(uri);
+    console.log("DB Connected Successfully!");
+  } catch (error) {
+    console.log("DB Connection Failed:", error.message);
+  }
+});
