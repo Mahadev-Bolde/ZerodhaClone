@@ -4,17 +4,40 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const { HoldingsModel } = require("./Model/HoldingsModel");
 const { PositionsModel } = require("./Model/PositionsModel");
 const { OrdersModel } = require("./Model/OrdersModel");
+
+// Routes
+const authRoute = require("./Routes/AuthRoute");
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
+
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Get All Holdings
 app.get("/allHoldings", async (req, res) => {
@@ -28,6 +51,7 @@ app.get("/allPositions", async (req, res) => {
   res.json(allPositions);
 });
 
+// Get order
 app.post("/newOrder", async (req, res) => {
   let newOrder = await new OrdersModel({
     name: req.body.name,
@@ -38,6 +62,8 @@ app.post("/newOrder", async (req, res) => {
   await newOrder.save();
   res.send(newOrder);
 });
+
+app.use("/", authRoute);
 
 // app.get("/addHoldings", async (req, res) => {
 //   const tempHoldings = [

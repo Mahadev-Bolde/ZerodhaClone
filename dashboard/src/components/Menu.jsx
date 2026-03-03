@@ -2,9 +2,16 @@ import React, { useState } from "react";
 
 import { Link } from "react-router-dom";
 
+import Logout from "./Logout.jsx";
+
 const Menu = () => {
   let [selectedMenu, setSelectedMenu] = useState(0);
   let [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  let [logout, setLogout] = useState(false);
+
+  const params = new URLSearchParams(window.location.search);
+  const user = params.get("user");
+  console.log("this is menu page" + user);
 
   const handleMenuClick = (index) => {
     setSelectedMenu(index);
@@ -12,6 +19,7 @@ const Menu = () => {
 
   const handleProfileClick = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    setLogout(!logout);
   };
 
   const menuClass = "menu";
@@ -97,9 +105,10 @@ const Menu = () => {
         </ul>
         <hr />
         <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">ZU</div>
+          <div className="avatar">{user}</div>
           <p className="username">USERID</p>
         </div>
+        {logout && <Logout />}
       </div>
     </div>
   );
