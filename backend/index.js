@@ -21,7 +21,10 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = [
+  "https://zerodha-clone-vbg9.vercel.app/login",
+  "https://zerodha-clone-ruddy-zeta.vercel.app",
+];
 
 app.use(
   cors({

@@ -31,7 +31,7 @@ export default function Signup() {
 
     try {
       const { data } = await axios.post(
-        "http://localhost:3002/signup",
+        "https://zerodhaclone-qwjp.onrender.com/signup",
         {
           ...form,
         },
