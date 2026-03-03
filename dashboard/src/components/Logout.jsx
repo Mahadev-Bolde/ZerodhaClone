@@ -17,7 +17,7 @@ export default function Logout() {
   async function handleLogout() {
     try {
       const { data } = await axios.post(
-        "http://localhost:3002/logout",
+        "https://zerodhaclone-qwjp.onrender.com/logout",
         {},
         { withCredentials: true }
       );

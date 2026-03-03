@@ -9,7 +9,6 @@ const { HoldingsModel } = require("./Model/HoldingsModel");
 const { PositionsModel } = require("./Model/PositionsModel");
 const { OrdersModel } = require("./Model/OrdersModel");
 
-// Routes
 const authRoute = require("./Routes/AuthRoute");
 
 const app = express();
@@ -17,83 +16,65 @@ const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 /* ===============================
-   MIDDLEWARE
+   GLOBAL MIDDLEWARE (ORDER MATTERS)
 ================================ */
 
-// Parse JSON
+// 🔴 MUST be first
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
+  // ✅ Handle preflight
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+app.use(cors({ credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-// ✅ FIXED CORS (Works with Vercel + Render)
-app.use(
-  cors({
-    origin: true, // allow all origins dynamically (safe for your case)
-    credentials: true, // required for cookies
-  })
-);
 
 /* ===============================
    ROUTES
 ================================ */
 
-// Test route
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully 🚀");
+  res.send("Backend running 🚀");
 });
 
-// Get All Holdings
 app.get("/allHoldings", async (req, res) => {
-  try {
-    const allHoldings = await HoldingsModel.find({});
-    res.json(allHoldings);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch holdings" });
-  }
+  const allHoldings = await HoldingsModel.find({});
+  res.json(allHoldings);
 });
 
-// Get All Positions
 app.get("/allPositions", async (req, res) => {
-  try {
-    const allPositions = await PositionsModel.find({});
-    res.json(allPositions);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch positions" });
-  }
+  const allPositions = await PositionsModel.find({});
+  res.json(allPositions);
 });
 
-// Create New Order
 app.post("/newOrder", async (req, res) => {
-  try {
-    const newOrder = new OrdersModel({
-      name: req.body.name,
-      qty: req.body.qty,
-      price: req.body.price,
-      mode: req.body.mode,
-    });
-
-    await newOrder.save();
-    res.json(newOrder);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to create order" });
-  }
+  const newOrder = new OrdersModel(req.body);
+  await newOrder.save();
+  res.json(newOrder);
 });
 
-// Auth routes (login/signup)
 app.use("/", authRoute);
 
 /* ===============================
-   DATABASE CONNECTION + SERVER
+   DB + SERVER
 ================================ */
 
 mongoose
   .connect(uri)
   .then(() => {
-    console.log("DB Connected Successfully!");
-
-    app.listen(PORT, () => {
-      console.log(`App Started on port ${PORT}`);
-    });
+    console.log("DB Connected");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
-  .catch((err) => {
-    console.log("DB Connection Failed:", err);
-  });
+  .catch(console.error);
