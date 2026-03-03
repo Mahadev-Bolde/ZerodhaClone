@@ -22,8 +22,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "https://zerodha-clone-ruddy-zeta.vercel.app/",
-  "https://zerodha-clone-vbg9.vercel.app/",
+  "https://zerodha-clone-ruddy-zeta.vercel.app",
+  "https://zerodha-clone-vbg9.vercel.app",
+  "https://zerodha-clone-vbg9-git-main-mahadev-boldes-projects.vercel.app",
+  "https://zerodha-clone-vbg9-bbhtiw7rt-mahadev-boldes-projects.vercel.app",
 ];
 
 app.use(
